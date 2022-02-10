@@ -21,34 +21,34 @@ async function run() {
     await client.connect();
     const database = client.db("Yooda-Hostel");
     const userCollection = database.collection("users");
+    const reviewCollection = database.collection("reviews");
     const foodsCollection = database.collection("foods");
     const studentsCollection = database.collection("students");
-    const reviewCollection = database.collection("reviews");
 
-    //admin foods get
+    //admin blog get
     app.get("/foods", async (req, res) => {
       const cursor = foodsCollection.find({});
       const foods = await cursor.toArray();
       res.json(foods);
     });
     //   console.log(req.query);
-    //   const cursor = studentsCollection.find({});
+    //   const cursor = blogsCollection.find({});
     //   const page = req.query.page;
     //   const size = parseInt(req.query.size);
-    //   let students;
+    //   let blogs;
     //   const count = await cursor.count();
     //   if (page) {
-    //     students = await cursor
+    //     blogs = await cursor
     //       .skip(page * size)
     //       .limit(size)
     //       .toArray();
     //   } else {
-    //     students = await cursor.toArray();
+    //     blogs = await cursor.toArray();
     //   }
 
     //   res.json({
     //     count,
-    //     students,
+    //     blogs,
     //   });
     // });
     //admin single blog
@@ -132,6 +132,36 @@ async function run() {
       res.send(result);
     });
 
+    //get all user order
+    app.get("/students", async (req, res) => {
+      console.log("Getting all user orders");
+      const cursor = studentsCollection.find({});
+      const result = await cursor.toArray();
+      res.json(result);
+    });
+
+    //update an order
+    app.put("/students/:id", async (req, res) => {
+      const id = req.params.id;
+      updatedOrder = req.body;
+      const filter = { _id: ObjectId(id) };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          status: updatedOrder.status,
+        },
+      };
+
+      const result = await studentsCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.json(result);
+    });
+
+    // ----------------------------------------------------
+
     //cancel an order
     app.delete("/foodsdelete/:id", async (req, res) => {
       const id = req.params.id;
@@ -141,15 +171,6 @@ async function run() {
       res.send(result);
     });
 
-    // -------------------------------------------------------
-
-    //get all student info
-    app.get("/getuserblog", async (req, res) => {
-      console.log("Getting all user orders");
-      const cursor = userblogsCollection.find({});
-      const result = await cursor.toArray();
-      res.json(result);
-    });
     // ---------------------------------------------------------
     // users collection insert a user
     app.post("/users", async (req, res) => {
@@ -157,6 +178,7 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.json(result);
     });
+
     // find user using email
     app.put("/users", async (req, res) => {
       const user = req.body;
